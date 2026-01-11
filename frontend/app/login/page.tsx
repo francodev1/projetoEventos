@@ -53,19 +53,24 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/perfil`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       })
 
       if (error) {
         setError('Erro ao fazer login com ' + provider)
+        setLoading(false)
       }
+      // Não desativa loading aqui pois vai redirecionar
     } catch (err: any) {
       setError('Erro: ' + err.message)
-    } finally {
       setLoading(false)
     }
   }
