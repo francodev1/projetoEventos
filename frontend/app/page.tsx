@@ -99,7 +99,7 @@ export default function Home() {
                 Pagamentos Seguros
               </h4>
               <p className="text-gray-600 leading-relaxed">
-                Integração com Pagar.me. Receba <strong>97% do valor</strong> diretamente na sua conta.
+                Integração com Pagar.me para pagamentos seguros e diretos na sua conta.
               </p>
             </div>
 
@@ -111,7 +111,7 @@ export default function Home() {
                 Controle de Acesso
               </h4>
               <p className="text-gray-600 leading-relaxed">
-                QR Codes únicos para cada ingresso. Validação rápida e segura na entrada do evento.
+                Ingressos eletrônicos para cada compra. Validação rápida e segura na entrada do evento.
               </p>
             </div>
 
@@ -162,7 +162,7 @@ export default function Home() {
               </li>
               <li className="flex items-start">
                 <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Geração automática de QR Codes</span>
+                <span>Emissão automática de ingressos eletrônicos</span>
               </li>
               <li className="flex items-start">
                 <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
