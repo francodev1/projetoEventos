@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, PlusCircle, Calendar, Ticket } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function Header() {
@@ -30,30 +30,27 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             <Link 
               href="/eventos/novo" 
-              className="text-gray-600 hover:text-primary transition-colors font-medium font-title"
+              className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title"
             >
-              Criar Evento
+              <PlusCircle className="w-5 h-5" />
+              Criar evento
             </Link>
             <Link 
-              href="/recursos" 
-              className="text-gray-600 hover:text-primary transition-colors font-medium font-title"
+              href="/meus-eventos" 
+              className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title"
             >
-              Recursos
+              <Calendar className="w-5 h-5" />
+              Meus eventos
             </Link>
             <Link 
-              href="/precos" 
-              className="text-gray-600 hover:text-primary transition-colors font-medium font-title"
+              href="/meus-ingressos" 
+              className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title"
             >
-              Preços
-            </Link>
-            <Link 
-              href="/login" 
-              className="text-gray-600 hover:text-primary transition-colors font-medium font-title"
-            >
-              Login
+              <Ticket className="w-5 h-5" />
+              Meus ingressos
             </Link>
             <Button asChild className="font-title">
               <Link href="/cadastro">
@@ -81,24 +78,27 @@ export function Header() {
             <div className="flex flex-col space-y-4">
               <Link
                 href="/eventos/novo"
-                className="text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
+                className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Criar Evento
+                <PlusCircle className="w-5 h-5" />
+                Criar evento
               </Link>
               <Link
-                href="/recursos"
-                className="text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
+                href="/meus-eventos"
+                className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Recursos
+                <Calendar className="w-5 h-5" />
+                Meus eventos
               </Link>
               <Link
-                href="/precos"
-                className="text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
+                href="/meus-ingressos"
+                className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Preços
+                <Ticket className="w-5 h-5" />
+                Meus ingressos
               </Link>
               <Link
                 href="/login"
