@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Facebook, Instagram, Twitter, Mail } from 'lucide-react'
 
 export function Footer() {
@@ -8,13 +9,18 @@ export function Footer() {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Sobre */}
           <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">F</span>
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="relative w-10 h-10">
+                <Image 
+                  src="/assets/Ativo 6.png" 
+                  alt="Fonte Church Logo" 
+                  fill
+                  className="object-contain brightness-0 invert"
+                />
               </div>
-              <h5 className="font-bold text-xl">Fonte Church</h5>
+              <h5 className="font-bold text-2xl font-title">Fonte Church</h5>
             </div>
-            <p className="text-gray-400 text-sm leading-relaxed font-body">
+            <p className="text-gray-400 text-sm leading-relaxed font-body font-bold">
               Plataforma de gestão de eventos e venda de ingressos para igrejas. 
               Simples, seguro e transparente.
             </p>
@@ -52,8 +58,8 @@ export function Footer() {
 
           {/* Produto */}
           <div>
-            <h6 className="font-semibold mb-4">Produto</h6>
-            <ul className="space-y-2 text-gray-400 text-sm">
+            <h6 className="font-semibold mb-4 font-body">Produto</h6>
+            <ul className="space-y-2 text-gray-400 text-sm font-body">
               <li>
                 <Link href="/eventos" className="hover:text-white transition-colors">
                   Eventos
@@ -79,8 +85,8 @@ export function Footer() {
 
           {/* Empresa */}
           <div>
-            <h6 className="font-semibold mb-4">Empresa</h6>
-            <ul className="space-y-2 text-gray-400 text-sm">
+            <h6 className="font-semibold mb-4 font-body">Empresa</h6>
+            <ul className="space-y-2 text-gray-400 text-sm font-body">
               <li>
                 <Link href="/sobre" className="hover:text-white transition-colors">
                   Sobre Nós
@@ -106,8 +112,8 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h6 className="font-semibold mb-4">Legal</h6>
-            <ul className="space-y-2 text-gray-400 text-sm">
+            <h6 className="font-semibold mb-4 font-body">Legal</h6>
+            <ul className="space-y-2 text-gray-400 text-sm font-body">
               <li>
                 <Link href="/privacidade" className="hover:text-white transition-colors">
                   Política de Privacidade

@@ -32,8 +32,7 @@ export default function Home() {
             </h2>
             
             <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-200 font-body">
-              Plataforma completa para gestão e venda de ingressos de eventos religiosos. 
-              Simples, seguro e com <strong className="text-primary">taxa transparente de apenas 3%</strong>.
+              Plataforma completa para gestão, venda e compra de ingressos. <span className="text-primary font-semibold">Simples e seguro</span>.
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in-up delay-300">
