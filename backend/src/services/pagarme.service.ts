@@ -44,13 +44,20 @@ class PagarmeService {
   constructor() {
     this.apiKey = process.env.PAGARME_API_KEY || '';
     this.platformRecipientId = process.env.PAGARME_PLATFORM_RECIPIENT_ID || '';
+  }
+
+  private ensureConfigured() {
+    this.apiKey = process.env.PAGARME_API_KEY || this.apiKey;
+    this.platformRecipientId = process.env.PAGARME_PLATFORM_RECIPIENT_ID || this.platformRecipientId;
 
     if (!this.apiKey) {
-      throw new Error('PAGARME_API_KEY não configurada');
+      return { ok: false, error: 'PAGARME_API_KEY não configurada' };
     }
     if (!this.platformRecipientId) {
-      throw new Error('PAGARME_PLATFORM_RECIPIENT_ID não configurada');
+      return { ok: false, error: 'PAGARME_PLATFORM_RECIPIENT_ID não configurada' };
     }
+
+    return { ok: true };
   }
 
   /**
@@ -123,6 +130,10 @@ class PagarmeService {
     };
 
     try {
+      const cfg = this.ensureConfigured();
+      if (!cfg.ok) {
+        return { success: false, error: cfg.error };
+      }
       const response = await axios.post(
         `${this.baseUrl}/orders`,
         payload,
@@ -156,6 +167,10 @@ class PagarmeService {
    */
   async getTransaction(transactionId: string) {
     try {
+      const cfg = this.ensureConfigured();
+      if (!cfg.ok) {
+        return { success: false, error: cfg.error };
+      }
       const response = await axios.get(
         `${this.baseUrl}/orders/${transactionId}`,
         {
@@ -200,6 +215,10 @@ class PagarmeService {
     };
   }) {
     try {
+      const cfg = this.ensureConfigured();
+      if (!cfg.ok) {
+        return { success: false, error: cfg.error };
+      }
       const response = await axios.post(
         `${this.baseUrl}/recipients`,
         {

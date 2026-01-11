@@ -26,29 +26,29 @@ export function Header() {
           <div className="hidden md:flex items-center space-x-8">
             <Link 
               href="/eventos/novo" 
-              className="text-gray-600 hover:text-primary transition-colors font-medium"
+              className="text-gray-600 hover:text-primary transition-colors font-medium font-title"
             >
               Criar Evento
             </Link>
             <Link 
               href="/recursos" 
-              className="text-gray-600 hover:text-primary transition-colors font-medium"
+              className="text-gray-600 hover:text-primary transition-colors font-medium font-title"
             >
               Recursos
             </Link>
             <Link 
               href="/precos" 
-              className="text-gray-600 hover:text-primary transition-colors font-medium"
+              className="text-gray-600 hover:text-primary transition-colors font-medium font-title"
             >
               Preços
             </Link>
             <Link 
               href="/login" 
-              className="text-gray-600 hover:text-primary transition-colors font-medium"
+              className="text-gray-600 hover:text-primary transition-colors font-medium font-title"
             >
               Login
             </Link>
-            <Button asChild>
+            <Button asChild className="font-title">
               <Link href="/cadastro">
                 Começar Agora
               </Link>
@@ -74,33 +74,33 @@ export function Header() {
             <div className="flex flex-col space-y-4">
               <Link
                 href="/eventos/novo"
-                className="text-gray-600 hover:text-primary transition-colors font-medium px-2 py-1"
+                className="text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Criar Evento
               </Link>
               <Link
                 href="/recursos"
-                className="text-gray-600 hover:text-primary transition-colors font-medium px-2 py-1"
+                className="text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Recursos
               </Link>
               <Link
                 href="/precos"
-                className="text-gray-600 hover:text-primary transition-colors font-medium px-2 py-1"
+                className="text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Preços
               </Link>
               <Link
                 href="/login"
-                className="text-gray-600 hover:text-primary transition-colors font-medium px-2 py-1"
+                className="text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Login
               </Link>
-              <Button asChild className="w-full">
+              <Button asChild className="w-full font-title">
                 <Link href="/cadastro">
                   Começar Agora
                 </Link>

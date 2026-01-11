@@ -12,9 +12,9 @@ export function Footer() {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">F</span>
               </div>
-              <h5 className="font-title font-bold text-xl">Fonte Church</h5>
+              <h5 className="font-bold text-xl">Fonte Church</h5>
             </div>
-            <p className="text-gray-400 text-sm leading-relaxed">
+            <p className="text-gray-400 text-sm leading-relaxed font-body">
               Plataforma de gestão de eventos e venda de ingressos para igrejas. 
               Simples, seguro e transparente.
             </p>
@@ -134,10 +134,10 @@ export function Footer() {
 
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-gray-400 text-sm text-center md:text-left">
+            <p className="text-gray-400 text-sm text-center md:text-left font-body">
               © {new Date().getFullYear()} Fonte Church. Todos os direitos reservados.
             </p>
-            <p className="text-gray-400 text-sm text-center md:text-right">
+            <p className="text-gray-400 text-sm text-center md:text-right font-body">
               Desenvolvido com ❤️ para igrejas
             </p>
           </div>
