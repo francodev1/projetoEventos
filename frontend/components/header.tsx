@@ -25,7 +25,7 @@ export function Header() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <Link 
-              href="/eventos" 
+              href="/eventos/novo" 
               className="text-gray-600 hover:text-primary transition-colors font-medium"
             >
               Criar Evento
@@ -73,7 +73,7 @@ export function Header() {
           <div className="md:hidden py-4 border-t">
             <div className="flex flex-col space-y-4">
               <Link
-                href="/eventos"
+                href="/eventos/novo"
                 className="text-gray-600 hover:text-primary transition-colors font-medium px-2 py-1"
                 onClick={() => setMobileMenuOpen(false)}
               >
