@@ -28,7 +28,7 @@ export function Header() {
               href="/eventos" 
               className="text-gray-600 hover:text-primary transition-colors font-medium"
             >
-              Eventos
+              Criar Evento
             </Link>
             <Link 
               href="/recursos" 
@@ -77,7 +77,7 @@ export function Header() {
                 className="text-gray-600 hover:text-primary transition-colors font-medium px-2 py-1"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Eventos
+                Criar Evento
               </Link>
               <Link
                 href="/recursos"
