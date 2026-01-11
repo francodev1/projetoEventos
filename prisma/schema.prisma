@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id                  String        @id @default(uuid())
+  email               String        @unique
+  name                String
+  password            String
+  role                String        @default("ATTENDEE")
+  subscriptionStatus  String        @default("INACTIVE")
+  pagarmeRecipientId  String?       @unique
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  // Relations
+  events              Event[]
+  tickets             Ticket[]
+  subscriptions       Subscription[]
+
+  @@map("users")
+}
+
+model Event {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  price       Float
+  date        DateTime
+  location    String
+  bannerUrl   String?
+  capacity    Int?
+  published   Boolean   @default(false)
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  organizer   User      @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  tickets     Ticket[]
+
+  @@map("events")
+}
+
+model Ticket {
+  id              String    @id @default(uuid())
+  qrCode          String    @unique
+  status          String    @default("PENDING")
+  purchasePrice   Float
+  eventId         String
+  ownerId         String
+  transactionId   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  event           Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  owner           User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@map("tickets")
+}
+
+model Subscription {
+  id                    String    @id @default(uuid())
+  userId                String
+  status                String    @default("PENDING")
+  planPrice             Float     @default(24.90)
+  startDate             DateTime?
+  endDate               DateTime?
+  pagarmeSubscriptionId String?   @unique
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
