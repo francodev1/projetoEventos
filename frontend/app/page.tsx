@@ -7,7 +7,7 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { supabase } from '@/lib/supabase'
+import { getCurrentUser, getToken, decodeToken } from '@/lib/auth-api'
 
 export default function Home() {
   const [user, setUser] = useState<any>(null)
@@ -19,10 +19,20 @@ export default function Home() {
 
   const checkUser = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
+      const token = getToken()
+      
+      if (token) {
+        // Decodificar token para obter informações do usuário
+        const payload = decodeToken(token)
+        if (payload) {
+          setUser(payload)
+        }
+      } else {
+        setUser(null)
+      }
     } catch (error) {
       console.error('Erro ao verificar usuário:', error)
+      setUser(null)
     } finally {
       setLoading(false)
     }

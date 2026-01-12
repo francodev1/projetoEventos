@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client';
 import pagarmeService from '../services/pagarme.service';
 import QRCode from 'qrcode';
 import { z } from 'zod';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 // Schema de validação para checkout
 const checkoutSchema = z.object({

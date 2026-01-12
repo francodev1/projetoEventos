@@ -3,27 +3,45 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Menu, X, PlusCircle, Calendar, Ticket, User, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { supabase, signOut } from '@/lib/supabase'
+import { logout, getToken, decodeToken } from '@/lib/auth-api'
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const router = useRouter()
 
   useEffect(() => {
     checkUser()
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
   }, [])
 
-  const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    setUser(session?.user ?? null)
+  const checkUser = () => {
+    try {
+      const token = getToken()
+      
+      if (token) {
+        const payload = decodeToken(token)
+        if (payload) {
+          setUser(payload)
+        } else {
+          setUser(null)
+        }
+      } else {
+        setUser(null)
+      }
+    } catch (error) {
+      console.error('Erro ao verificar usuário:', error)
+      setUser(null)
+    }
+  }
+
+  const handleLogout = () => {
+    logout()
+    setUser(null)
+    router.push('/')
+    router.refresh()
   }
 
   return (
@@ -79,7 +97,7 @@ export function Header() {
                   Perfil
                 </Link>
                 <Button 
-                  onClick={signOut} 
+                  onClick={handleLogout} 
                   variant="outline" 
                   className="font-title"
                 >
@@ -156,7 +174,7 @@ export function Header() {
                     Perfil
                   </Link>
                   <Button 
-                    onClick={() => { signOut(); setMobileMenuOpen(false); }} 
+                    onClick={() => { handleLogout(); setMobileMenuOpen(false); }} 
                     variant="outline" 
                     className="w-full font-title"
                   >

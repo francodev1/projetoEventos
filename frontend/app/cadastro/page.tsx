@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { register } from '@/lib/auth-api'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -43,28 +44,17 @@ export default function CadastroPage() {
     setLoading(true)
 
     try {
-      // Criar usuário com Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            name: formData.name,
-            role: 'ORGANIZER'
-          }
-        }
-      })
+      // Criar usuário via backend JWT
+      const response = await register(formData.name, formData.email, formData.password)
 
-      if (authError) {
-        setError('Erro ao criar conta: ' + authError.message)
-        return
-      }
+      console.log('Cadastro bem-sucedido:', response.user.name)
 
       // Redirecionar para home
       router.push('/')
       router.refresh()
     } catch (err: any) {
-      setError('Erro ao criar conta: ' + err.message)
+      console.error('Erro no cadastro:', err)
+      setError(err.message || 'Erro ao criar conta')
     } finally {
       setLoading(false)
     }
