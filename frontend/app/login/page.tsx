@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { login, saveToken } from '@/lib/auth-api'
 import { supabase } from '@/lib/supabase'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
@@ -37,20 +38,17 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password
-      })
-
-      if (authError) {
-        setError('Email ou senha incorretos')
-        return
-      }
-
-      // Redirecionar para perfil
-      router.push('/perfil')
+      // Fazer login via backend JWT
+      const response = await login(formData.email, formData.password)
+      
+      console.log('Login bem-sucedido:', response.user.name)
+      
+      // Redirecionar para home
+      router.push('/')
+      router.refresh()
     } catch (err: any) {
-      setError('Erro ao fazer login: ' + err.message)
+      console.error('Erro no login:', err)
+      setError(err.message || 'Email ou senha incorretos')
     } finally {
       setLoading(false)
     }

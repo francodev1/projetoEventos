@@ -1,11 +1,51 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Calendar, CreditCard, Users, CheckCircle, ArrowRight, Sparkles } from 'lucide-react'
+import { Calendar, CreditCard, Users, CheckCircle, ArrowRight, Sparkles, Plus } from 'lucide-react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { getCurrentUser, getToken, decodeToken } from '@/lib/auth-api'
 
 export default function Home() {
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    checkUser()
+  }, [])
+
+  const checkUser = async () => {
+    try {
+      const token = getToken()
+      
+      if (token) {
+        // Decodificar token para obter informações do usuário
+        const payload = decodeToken(token)
+        if (payload) {
+          setUser(payload)
+        }
+      } else {
+        setUser(null)
+      }
+    } catch (error) {
+      console.error('Erro ao verificar usuário:', error)
+      setUser(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -21,33 +61,62 @@ export default function Home() {
           <div className="text-center">
             <div className="animate-fade-in-up">
               <Badge variant="secondary" className="mb-6 px-4 py-2 hover:scale-105 transition-transform">
-              <Sparkles className="w-3 h-3 mr-2 inline" />
-              Plataforma Completa para Igrejas
+                <Sparkles className="w-3 h-3 mr-2 inline" />
+                Plataforma Completa para Igrejas
               </Badge>
             </div>
             
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-title font-bold text-gray-900 mb-6 leading-tight animate-fade-in-up delay-100">
-              Transforme Eventos da<br />
-              <span className="text-primary">Sua Igreja</span>
-            </h2>
-            
-            <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-200 font-body">
-              Plataforma completa para gestão, venda e compra de ingressos. <span className="text-primary font-semibold">Simples e seguro</span>.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in-up delay-300">
-              <Button size="lg" asChild className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all">
-                <Link href="/cadastro">
-                  Criar Conta Grátis
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild className="text-lg px-8 py-6">
-                <Link href="/eventos">
-                  Ver Eventos
-                </Link>
-              </Button>
-            </div>
+            {!user ? (
+              <>
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-title font-bold text-gray-900 mb-6 leading-tight animate-fade-in-up delay-100">
+                  Transforme Eventos da<br />
+                  <span className="text-primary">Sua Igreja</span>
+                </h2>
+                
+                <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-200 font-body">
+                  Plataforma completa para gestão, venda e compra de ingressos. <span className="text-primary font-semibold">Simples e seguro</span>.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in-up delay-300">
+                  <Button size="lg" asChild className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all">
+                    <Link href="/cadastro">
+                      Criar Conta Grátis
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                  </Button>
+                  <Button size="lg" variant="outline" asChild className="text-lg px-8 py-6">
+                    <Link href="/login">
+                      Fazer Login
+                    </Link>
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-title font-bold text-gray-900 mb-6 leading-tight animate-fade-in-up delay-100">
+                  Bem-vindo de volta,<br />
+                  <span className="text-primary">{user.user_metadata?.name || user.email?.split('@')[0]}!</span>
+                </h2>
+                
+                <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-200 font-body">
+                  Gerencie seus eventos, acompanhe vendas e conecte sua comunidade.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in-up delay-300">
+                  <Button size="lg" asChild className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all">
+                    <Link href="/eventos/novo">
+                      <Plus className="mr-2 h-5 w-5" />
+                      Criar Novo Evento
+                    </Link>
+                  </Button>
+                  <Button size="lg" variant="outline" asChild className="text-lg px-8 py-6">
+                    <Link href="/perfil">
+                      Meu Perfil
+                    </Link>
+                  </Button>
+                </div>
+              </>
+            )}
 
             <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-gray-600">
               <div className="flex items-center gap-2">
