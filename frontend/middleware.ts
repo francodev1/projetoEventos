@@ -78,10 +78,10 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Redirecionar para perfil se já estiver autenticado e tentar acessar login/cadastro
+  // Redirecionar para home (/) se já estiver autenticado e tentar acessar login/cadastro
   if ((path === '/login' || path === '/cadastro') && session) {
     const redirectUrl = req.nextUrl.clone()
-    redirectUrl.pathname = '/perfil'
+    redirectUrl.pathname = '/'
     return NextResponse.redirect(redirectUrl)
   }
 

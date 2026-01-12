@@ -60,8 +60,9 @@ export default function CadastroPage() {
         return
       }
 
-      // Redirecionar para perfil
-      router.push('/perfil')
+      // Redirecionar para home
+      router.push('/')
+      router.refresh()
     } catch (err: any) {
       setError('Erro ao criar conta: ' + err.message)
     } finally {

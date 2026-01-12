@@ -39,8 +39,9 @@ export default function LoginPage() {
         return
       }
 
-      // Redirecionar para perfil
-      router.push('/perfil')
+      // Redirecionar para home
+      router.push('/')
+      router.refresh()
     } catch (err: any) {
       setError('Erro ao fazer login: ' + err.message)
     } finally {

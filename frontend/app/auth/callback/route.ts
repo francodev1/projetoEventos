@@ -30,6 +30,6 @@ export async function GET(request: NextRequest) {
     await supabase.auth.exchangeCodeForSession(code)
   }
 
-  // Redirecionar para o perfil
-  return NextResponse.redirect(new URL('/perfil', requestUrl.origin))
+  // Redirecionar para home
+  return NextResponse.redirect(new URL('/', requestUrl.origin))
 }
