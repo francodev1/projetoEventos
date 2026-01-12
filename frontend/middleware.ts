@@ -60,7 +60,7 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getSession()
 
   // Rotas protegidas (requerem autenticação)
-  const protectedRoutes = ['/perfil', '/eventos/novo', '/eventos/editar']
+  const protectedRoutes = ['/perfil', '/eventos/novo', '/eventos/editar', '/meus-eventos/lista', '/meus-ingressos/lista']
   
   // Rotas públicas mesmo estando logado
   const publicRoutes = ['/', '/login', '/cadastro', '/precos', '/recursos', '/fontes']

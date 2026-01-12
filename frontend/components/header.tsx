@@ -39,14 +39,14 @@ export function Header() {
               Criar evento
             </Link>
             <Link 
-              href="/meus-eventos" 
+              href="/meus-eventos/lista" 
               className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title"
             >
               <Calendar className="w-5 h-5" />
               Meus eventos
             </Link>
             <Link 
-              href="/meus-ingressos" 
+              href="/meus-ingressos/lista" 
               className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title"
             >
               <Ticket className="w-5 h-5" />
@@ -85,7 +85,7 @@ export function Header() {
                 Criar evento
               </Link>
               <Link
-                href="/meus-eventos"
+                href="/meus-eventos/lista"
                 className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -93,7 +93,7 @@ export function Header() {
                 Meus eventos
               </Link>
               <Link
-                href="/meus-ingressos"
+                href="/meus-ingressos/lista"
                 className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
                 onClick={() => setMobileMenuOpen(false)}
               >
