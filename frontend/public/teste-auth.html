@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Autenticação ChurchPass</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #0066cc;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px 10px 0;
+        }
+        button:hover {
+            background: #0052a3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste de Autenticação ChurchPass</h1>
+        
+        <h2>1. Cadastro</h2>
+        <div class="form-group">
+            <label>Nome:</label>
+            <input type="text" id="signupName" placeholder="Seu nome">
+        </div>
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" id="signupEmail" placeholder="seu@email.com">
+        </div>
+        <div class="form-group">
+            <label>Senha:</label>
+            <input type="password" id="signupPassword" placeholder="Mínimo 6 caracteres">
+        </div>
+        <button onclick="testSignup()">📝 Criar Conta</button>
+        <div id="signupResult" class="result"></div>
+
+        <hr style="margin: 30px 0;">
+
+        <h2>2. Login</h2>
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" id="loginEmail" placeholder="seu@email.com">
+        </div>
+        <div class="form-group">
+            <label>Senha:</label>
+            <input type="password" id="loginPassword" placeholder="Sua senha">
+        </div>
+        <button onclick="testLogin()">🔓 Fazer Login</button>
+        <div id="loginResult" class="result"></div>
+
+        <hr style="margin: 30px 0;">
+
+        <h2>3. Verificação</h2>
+        <button onclick="checkSession()">✅ Verificar Sessão</button>
+        <button onclick="logout()">🚪 Fazer Logout</button>
+        <div id="sessionResult" class="result"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Configurar Supabase
+        const SUPABASE_URL = 'https://tkcnefujgwgjvwlrlxdc.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_Etgjg96PYmfci8NpkNYPIQ_iwXfgATH';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function showResult(elementId, message, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.className = 'result ' + (isSuccess ? 'success' : 'error');
+            element.textContent = message;
+        }
+
+        async function testSignup() {
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            if (!name || !email || !password) {
+                showResult('signupResult', '❌ Preencha todos os campos', false);
+                return;
+            }
+
+            showResult('signupResult', '⏳ Criando conta...', true);
+
+            try {
+                // Criar usuário com Supabase Auth
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            name: name,
+                            role: 'ORGANIZER'
+                        }
+                    }
+                });
+
+                if (authError) {
+                    showResult('signupResult', '❌ Erro: ' + authError.message, false);
+                    return;
+                }
+
+                // Inserir na tabela public.users
+                if (authData.user) {
+                    const { error: insertError } = await supabase
+                        .from('users')
+                        .insert([
+                            {
+                                id: authData.user.id,
+                                name: name,
+                                email: email,
+                                role: 'ORGANIZER',
+                                subscriptionStatus: 'INACTIVE'
+                            }
+                        ]);
+
+                    if (insertError) {
+                        showResult('signupResult', '⚠️ Usuário criado mas com erro ao salvar dados: ' + insertError.message, false);
+                        return;
+                    }
+                }
+
+                showResult('signupResult', '✅ Conta criada com sucesso! Email: ' + email, true);
+                document.getElementById('signupName').value = '';
+                document.getElementById('signupEmail').value = '';
+                document.getElementById('signupPassword').value = '';
+
+            } catch (err) {
+                showResult('signupResult', '❌ Erro: ' + err.message, false);
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showResult('loginResult', '❌ Preencha email e senha', false);
+                return;
+            }
+
+            showResult('loginResult', '⏳ Fazendo login...', true);
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    showResult('loginResult', '❌ Erro: ' + error.message, false);
+                    return;
+                }
+
+                showResult('loginResult', '✅ Login bem-sucedido! Usuário: ' + data.user.email, true);
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+
+            } catch (err) {
+                showResult('loginResult', '❌ Erro: ' + err.message, false);
+            }
+        }
+
+        async function checkSession() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session) {
+                    showResult('sessionResult', '✅ Logado como: ' + session.user.email, true);
+                } else {
+                    showResult('sessionResult', '❌ Nenhuma sessão ativa', false);
+                }
+            } catch (err) {
+                showResult('sessionResult', '❌ Erro: ' + err.message, false);
+            }
+        }
+
+        async function logout() {
+            try {
+                await supabase.auth.signOut();
+                showResult('sessionResult', '✅ Deslogado com sucesso!', true);
+            } catch (err) {
+                showResult('sessionResult', '❌ Erro: ' + err.message, false);
+            }
+        }
+
+        // Verificar sessão ao carregar
+        checkSession();
+    </script>
+</body>
+</html>

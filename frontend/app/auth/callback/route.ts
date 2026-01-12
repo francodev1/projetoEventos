@@ -27,7 +27,60 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+    // Se foi bem-sucedido, inserir dados em public.users se não existir
+    if (data?.user && !error) {
+      try {
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', data.user.id)
+          .single()
+
+        // Se não existe, inserir
+        if (!existingUser) {
+          await supabase
+            .from('users')
+            .insert([{
+              id: data.user.id,
+              name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'Usuário',
+              email: data.user.email,
+              role: 'ORGANIZER',
+              subscriptionStatus: 'INACTIVE'
+            }])
+        }
+      } catch (err) {
+        // Log apenas em desenvolvimento
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[CALLBACK] Erro ao inserir usuário:', err)
+        }
+      }
+    }
+  }
+
+  // Redirecionar para home
+  return NextResponse.redirect(new URL('/', requestUrl.origin))
+}
+            .from('users')
+            .insert([
+              {
+                id: data.user.id,
+                name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'Usuário',
+                email: data.user.email,
+                role: 'ORGANIZER',
+                subscriptionStatus: 'INACTIVE'
+              }
+            ])
+
+          console.log('[CALLBACK] INSERT em users:', insertError ? `ERRO: ${insertError.message}` : 'sucesso')
+        }
+      } catch (err) {
+        console.error('[CALLBACK] Erro ao inserir usuário:', err)
+      }
+    }
+  } else {
+    console.log('[CALLBACK] Nenhum code recebido')
   }
 
   // Redirecionar para home

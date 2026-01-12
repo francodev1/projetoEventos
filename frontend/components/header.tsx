@@ -3,45 +3,32 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { Menu, X, PlusCircle, Calendar, Ticket, User, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { logout, getToken, decodeToken } from '@/lib/auth-api'
+import { supabase } from '@/lib/supabase'
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
-  const router = useRouter()
 
   useEffect(() => {
     checkUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  const checkUser = () => {
-    try {
-      const token = getToken()
-      
-      if (token) {
-        const payload = decodeToken(token)
-        if (payload) {
-          setUser(payload)
-        } else {
-          setUser(null)
-        }
-      } else {
-        setUser(null)
-      }
-    } catch (error) {
-      console.error('Erro ao verificar usuário:', error)
-      setUser(null)
-    }
+  const checkUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    setUser(session?.user ?? null)
   }
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
     setUser(null)
-    router.push('/')
-    router.refresh()
   }
 
   return (
@@ -66,29 +53,30 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
+            <Link 
+              href={user ? "/eventos/novo" : "/login?redirect=/eventos/novo"}
+              className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title"
+            >
+              <PlusCircle className="w-5 h-5" />
+              Criar evento
+            </Link>
+            <Link 
+              href={user ? "/meus-eventos" : "/login?redirect=/meus-eventos"}
+              className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title"
+            >
+              <Calendar className="w-5 h-5" />
+              Meus eventos
+            </Link>
+            <Link 
+              href={user ? "/meus-ingressos" : "/login?redirect=/meus-ingressos"}
+              className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title"
+            >
+              <Ticket className="w-5 h-5" />
+              Meus ingressos
+            </Link>
+            
             {user ? (
               <>
-                <Link 
-                  href="/eventos/novo" 
-                  className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title"
-                >
-                  <PlusCircle className="w-5 h-5" />
-                  Criar evento
-                </Link>
-                <Link 
-                  href="/meus-eventos" 
-                  className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title"
-                >
-                  <Calendar className="w-5 h-5" />
-                  Meus eventos
-                </Link>
-                <Link 
-                  href="/meus-ingressos" 
-                  className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title"
-                >
-                  <Ticket className="w-5 h-5" />
-                  Meus ingressos
-                </Link>
                 <Link 
                   href="/perfil" 
                   className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title"
@@ -106,19 +94,11 @@ export function Header() {
                 </Button>
               </>
             ) : (
-              <>
-                <Link 
-                  href="/login" 
-                  className="text-gray-600 hover:text-primary transition-colors font-medium font-title"
-                >
-                  Entrar
+              <Button asChild className="font-title">
+                <Link href="/cadastro">
+                  Começar Agora
                 </Link>
-                <Button asChild className="font-title">
-                  <Link href="/cadastro">
-                    Começar Agora
-                  </Link>
-                </Button>
-              </>
+              </Button>
             )}
           </div>
 
@@ -139,32 +119,33 @@ export function Header() {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t">
             <div className="flex flex-col space-y-4">
+              <Link
+                href={user ? "/eventos/novo" : "/login?redirect=/eventos/novo"}
+                className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <PlusCircle className="w-5 h-5" />
+                Criar evento
+              </Link>
+              <Link
+                href={user ? "/meus-eventos" : "/login?redirect=/meus-eventos"}
+                className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Calendar className="w-5 h-5" />
+                Meus eventos
+              </Link>
+              <Link
+                href={user ? "/meus-ingressos" : "/login?redirect=/meus-ingressos"}
+                className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Ticket className="w-5 h-5" />
+                Meus ingressos
+              </Link>
+              
               {user ? (
                 <>
-                  <Link
-                    href="/eventos/novo"
-                    className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <PlusCircle className="w-5 h-5" />
-                    Criar evento
-                  </Link>
-                  <Link
-                    href="/meus-eventos"
-                    className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Calendar className="w-5 h-5" />
-                    Meus eventos
-                  </Link>
-                  <Link
-                    href="/meus-ingressos"
-                    className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Ticket className="w-5 h-5" />
-                    Meus ingressos
-                  </Link>
                   <Link
                     href="/perfil"
                     className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
@@ -183,20 +164,11 @@ export function Header() {
                   </Button>
                 </>
               ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className="text-gray-600 hover:text-primary transition-colors font-medium font-title px-2 py-1"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Entrar
+                <Button asChild className="w-full font-title">
+                  <Link href="/cadastro">
+                    Começar Agora
                   </Link>
-                  <Button asChild className="w-full font-title">
-                    <Link href="/cadastro">
-                      Começar Agora
-                    </Link>
-                  </Button>
-                </>
+                </Button>
               )}
             </div>
           </div>

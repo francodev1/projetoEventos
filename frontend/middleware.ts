@@ -59,18 +59,17 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession()
 
-  // Rotas protegidas (requerem autenticação)
-  const protectedRoutes = ['/perfil', '/eventos/novo', '/eventos/editar']
-  
-  // Rotas públicas mesmo estando logado
-  const publicRoutes = ['/', '/login', '/cadastro', '/precos', '/recursos', '/fontes']
-
   const path = req.nextUrl.pathname
 
-  // Verificar se é uma rota protegida
+  // Rotas protegidas (requerem autenticação)
+  const protectedRoutes = ['/perfil', '/eventos/novo', '/eventos/editar', '/meus-eventos', '/meus-ingressos']
   const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
 
-  // Redirecionar para login se tentar acessar rota protegida sem estar autenticado
+  // Rotas de autenticação
+  const authRoutes = ['/login', '/cadastro']
+  const isAuthRoute = authRoutes.includes(path)
+
+  // Se não tem sessão e tenta acessar rota protegida -> redirecionar para login
   if (isProtectedRoute && !session) {
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = '/login'
@@ -78,12 +77,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Redirecionar para home (/) se já estiver autenticado e tentar acessar login/cadastro
-  if ((path === '/login' || path === '/cadastro') && session) {
-    const redirectUrl = req.nextUrl.clone()
-    redirectUrl.pathname = '/'
-    return NextResponse.redirect(redirectUrl)
-  }
+  // Se tem sessão e está em rota de auth (/login ou /cadastro) -> permitir (pode querer ver a modal)
+  // Não forçar redirecionamento aqui para permitir modal de login
 
   return response
 }

@@ -3,12 +3,79 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { register } from '@/lib/auth-api'
 import { supabase } from '@/lib/supabase'
+import { validateEmail, validatePassword, validateName, sanitizeInput, checkRateLimit, secureLog } from '@/lib/security'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight, Loader2, Check, X } from 'lucide-react'
+
+// Componente de força da senha
+function PasswordStrength({ password }: { password: string }) {
+  const hasMinLength = password.length >= 8
+  const hasUppercase = /[A-Z]/.test(password)
+  const hasLowercase = /[a-z]/.test(password)
+  const hasNumber = /[0-9]/.test(password)
+
+  const strength = [hasMinLength, hasUppercase, hasLowercase, hasNumber].filter(Boolean).length
+
+  const getStrengthColor = () => {
+    if (strength === 0) return 'bg-gray-200'
+    if (strength <= 2) return 'bg-red-500'
+    if (strength === 3) return 'bg-yellow-500'
+    return 'bg-green-500'
+  }
+
+  const getStrengthText = () => {
+    if (strength === 0) return ''
+    if (strength <= 2) return 'Fraca'
+    if (strength === 3) return 'Média'
+    return 'Forte'
+  }
+
+  const CheckItem = ({ checked, text }: { checked: boolean; text: string }) => (
+    <div className="flex items-center gap-2 text-sm">
+      {checked ? (
+        <Check className="w-4 h-4 text-green-600" />
+      ) : (
+        <X className="w-4 h-4 text-gray-400" />
+      )}
+      <span className={checked ? 'text-green-700' : 'text-gray-500'}>{text}</span>
+    </div>
+  )
+
+  if (!password) return null
+
+  return (
+    <div className="mt-3 space-y-3">
+      {/* Progress Bar */}
+      <div>
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-xs text-gray-600">Força da senha:</span>
+          <span className={`text-xs font-medium ${
+            strength <= 2 ? 'text-red-600' : strength === 3 ? 'text-yellow-600' : 'text-green-600'
+          }`}>
+            {getStrengthText()}
+          </span>
+        </div>
+        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className={`h-full transition-all duration-300 ${getStrengthColor()}`}
+            style={{ width: `${(strength / 4) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Requirements */}
+      <div className="grid grid-cols-2 gap-2 p-3 bg-gray-50 rounded-lg">
+        <CheckItem checked={hasMinLength} text="8+ caracteres" />
+        <CheckItem checked={hasUppercase} text="Maiúscula" />
+        <CheckItem checked={hasLowercase} text="Minúscula" />
+        <CheckItem checked={hasNumber} text="Número" />
+      </div>
+    </div>
+  )
+}
 
 export default function CadastroPage() {
   const router = useRouter()
@@ -25,9 +92,28 @@ export default function CadastroPage() {
     e.preventDefault()
     setError('')
 
-    // Validações
+    // Validações básicas
     if (!formData.name || !formData.email || !formData.password) {
       setError('Preencha todos os campos')
+      return
+    }
+
+    // Validação de nome
+    if (!validateName(formData.name)) {
+      setError('Nome inválido. Use apenas letras, espaços e hífens.')
+      return
+    }
+
+    // Validação de email
+    if (!validateEmail(formData.email)) {
+      setError('Email inválido')
+      return
+    }
+
+    // Validação de senha
+    const passwordValidation = validatePassword(formData.password)
+    if (!passwordValidation.valid) {
+      setError(passwordValidation.message || 'Senha inválida')
       return
     }
 
@@ -36,25 +122,66 @@ export default function CadastroPage() {
       return
     }
 
-    if (formData.password.length < 6) {
-      setError('A senha deve ter no mínimo 6 caracteres')
+    // Rate limiting
+    if (!checkRateLimit(`signup-${formData.email}`, 3, 300000)) {
+      setError('Muitas tentativas. Aguarde 5 minutos e tente novamente.')
       return
     }
 
     setLoading(true)
 
     try {
-      // Criar usuário via backend JWT
-      const response = await register(formData.name, formData.email, formData.password)
+      // Sanitizar nome
+      const sanitizedName = sanitizeInput(formData.name)
+      const normalizedEmail = formData.email.toLowerCase().trim()
 
-      console.log('Cadastro bem-sucedido:', response.user.name)
+      // Criar usuário com Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: normalizedEmail,
+        password: formData.password,
+        options: {
+          data: {
+            name: sanitizedName,
+            role: 'ORGANIZER'
+          }
+        }
+      })
+
+      if (authError) {
+        secureLog.error('Erro ao criar conta', authError)
+        setError('Erro ao criar conta. Verifique se o email já não está em uso.')
+        return
+      }
+
+      // Inserir dados na tabela public.users
+      if (authData.user) {
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert([{
+            id: authData.user.id,
+            name: sanitizedName,
+            email: normalizedEmail,
+            role: 'ORGANIZER',
+            subscriptionStatus: 'INACTIVE'
+          }])
+
+        if (insertError) {
+          secureLog.error('Erro ao salvar dados do usuário', insertError)
+          // Não bloquear o cadastro por erro de insert
+        }
+      }
+
+      secureLog.auth('Cadastro bem-sucedido', normalizedEmail)
+
+      // Aguardar um pouco para garantir que a sessão foi criada
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       // Redirecionar para home
       router.push('/')
       router.refresh()
     } catch (err: any) {
-      console.error('Erro no cadastro:', err)
-      setError(err.message || 'Erro ao criar conta')
+      secureLog.error('Erro no cadastro', err)
+      setError('Erro ao criar conta. Tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -184,12 +311,13 @@ export default function CadastroPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Mínimo 6 caracteres"
+                placeholder="Mínimo 8 caracteres"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 disabled={loading}
                 required
               />
+              <PasswordStrength password={formData.password} />
             </div>
 
             <div>

@@ -2,39 +2,43 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Calendar, CreditCard, Users, CheckCircle, ArrowRight, Sparkles, Plus } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Calendar, Plus, Ticket, ArrowRight, Sparkles } from 'lucide-react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { getCurrentUser, getToken, decodeToken } from '@/lib/auth-api'
+import { supabase } from '@/lib/supabase'
 
 export default function Home() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     checkUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   const checkUser = async () => {
     try {
-      const token = getToken()
-      
-      if (token) {
-        // Decodificar token para obter informações do usuário
-        const payload = decodeToken(token)
-        if (payload) {
-          setUser(payload)
-        }
-      } else {
-        setUser(null)
-      }
-    } catch (error) {
-      console.error('Erro ao verificar usuário:', error)
-      setUser(null)
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user ?? null)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleMenuClick = (href: string) => {
+    if (!user) {
+      router.push('/login?redirect=' + href)
+    } else {
+      router.push(href)
     }
   }
 
@@ -47,211 +51,294 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <Header />
 
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-50 via-white to-blue-50 pt-4 pb-12 lg:pt-8 lg:pb-20 overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-400/5 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="animate-fade-in-up">
-              <Badge variant="secondary" className="mb-6 px-4 py-2 hover:scale-105 transition-transform">
-                <Sparkles className="w-3 h-3 mr-2 inline" />
-                Plataforma Completa para Igrejas
-              </Badge>
+      {/* ESTADO: NÃO LOGADO */}
+      {!user ? (
+        <>
+          {/* Hero Section */}
+          <section className="relative bg-gradient-to-br from-blue-50 via-white to-blue-50 pt-8 pb-16 lg:pt-12 lg:pb-24 overflow-hidden">
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
+              <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-400/5 rounded-full blur-3xl"></div>
             </div>
-            
-            {!user ? (
-              <>
-                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-title font-bold text-gray-900 mb-6 leading-tight animate-fade-in-up delay-100">
-                  Transforme Eventos da<br />
-                  <span className="text-primary">Sua Igreja</span>
-                </h2>
+
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center">
+                <Badge variant="secondary" className="mb-6 px-4 py-2">
+                  <Sparkles className="w-3 h-3 mr-2 inline" />
+                  Plataforma para Igrejas
+                </Badge>
                 
-                <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-200 font-body">
-                  Plataforma completa para gestão, venda e compra de ingressos. <span className="text-primary font-semibold">Simples e seguro</span>.
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-title font-bold text-gray-900 mb-6 leading-tight">
+                  Transforme os <span className="text-primary">Eventos</span> de sua Igreja
+                </h1>
+                
+                <p className="text-lg sm:text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
+                  Gerencie eventos, venda ingressos e conecte sua comunidade em uma única plataforma.
                 </p>
                 
-                <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in-up delay-300">
-                  <Button size="lg" asChild className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all">
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <Button size="lg" asChild className="text-lg px-8 py-6">
                     <Link href="/cadastro">
-                      Criar Conta Grátis
+                      Começar Grátis
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Link>
                   </Button>
                   <Button size="lg" variant="outline" asChild className="text-lg px-8 py-6">
                     <Link href="/login">
-                      Fazer Login
+                      Já tenho conta
                     </Link>
                   </Button>
                 </div>
-              </>
-            ) : (
-              <>
-                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-title font-bold text-gray-900 mb-6 leading-tight animate-fade-in-up delay-100">
-                  Bem-vindo de volta,<br />
-                  <span className="text-primary">{user.user_metadata?.name || user.email?.split('@')[0]}!</span>
+              </div>
+            </div>
+          </section>
+
+          {/* Funcionalidades com Click para Login */}
+          <section className="bg-white py-16 lg:py-24">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-16">
+                <h2 className="text-4xl font-title font-bold text-gray-900 mb-4">
+                  O que você pode fazer
                 </h2>
-                
-                <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-200 font-body">
-                  Gerencie seus eventos, acompanhe vendas e conecte sua comunidade.
+                <p className="text-lg text-gray-600">
+                  Clique em qualquer funcionalidade para começar (será necessário fazer login)
                 </p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-8">
+                {/* Card 1: Criar Evento */}
+                <div 
+                  onClick={() => handleMenuClick('/eventos/novo')}
+                  className="bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-2xl border border-blue-200 hover:shadow-xl hover:scale-105 transition-all cursor-pointer group"
+                >
+                  <div className="bg-blue-500 w-16 h-16 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <Plus className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Criar Evento</h3>
+                  <p className="text-gray-700 mb-6 leading-relaxed">
+                    Configure seu evento com data, horário, local, descrição e defina o preço dos ingressos.
+                  </p>
+                  <div className="inline-flex items-center text-blue-600 font-semibold group-hover:gap-2 gap-1 transition-all">
+                    Começar <ArrowRight className="w-5 h-5" />
+                  </div>
+                </div>
+
+                {/* Card 2: Meus Eventos */}
+                <div 
+                  onClick={() => handleMenuClick('/meus-eventos')}
+                  className="bg-gradient-to-br from-purple-50 to-purple-100 p-8 rounded-2xl border border-purple-200 hover:shadow-xl hover:scale-105 transition-all cursor-pointer group"
+                >
+                  <div className="bg-purple-500 w-16 h-16 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <Calendar className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Meus Eventos</h3>
+                  <p className="text-gray-700 mb-6 leading-relaxed">
+                    Veja todos os seus eventos, acompanhe vendas, estatísticas e gerencie ingressos vendidos.
+                  </p>
+                  <div className="inline-flex items-center text-purple-600 font-semibold group-hover:gap-2 gap-1 transition-all">
+                    Ver eventos <ArrowRight className="w-5 h-5" />
+                  </div>
+                </div>
+
+                {/* Card 3: Meus Ingressos */}
+                <div 
+                  onClick={() => handleMenuClick('/meus-ingressos')}
+                  className="bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-2xl border border-green-200 hover:shadow-xl hover:scale-105 transition-all cursor-pointer group"
+                >
+                  <div className="bg-green-500 w-16 h-16 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <Ticket className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Meus Ingressos</h3>
+                  <p className="text-gray-700 mb-6 leading-relaxed">
+                    Veja os ingressos que você comprou, acesse seu QR code e mostre na entrada do evento.
+                  </p>
+                  <div className="inline-flex items-center text-green-600 font-semibold group-hover:gap-2 gap-1 transition-all">
+                    Ver ingressos <ArrowRight className="w-5 h-5" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* CTA Final */}
+          <section className="bg-gradient-to-r from-primary to-blue-600 text-white py-16 lg:py-20">
+            <div className="max-w-4xl mx-auto px-4 text-center">
+              <h2 className="text-4xl lg:text-5xl font-title font-bold mb-4">
+                Pronto para começar?
+              </h2>
+              <p className="text-lg mb-10 text-blue-50">
+                Crie sua conta gratuitamente e comece a gerenciar eventos da sua igreja agora!
+              </p>
+              <Button size="lg" className="bg-white text-primary hover:bg-gray-100 text-lg px-8 py-6">
+                <Link href="/cadastro">
+                  Criar Conta Grátis
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
+          </section>
+        </>
+      ) : (
+        /* ESTADO: LOGADO - Dashboard Profissional */
+        <section className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50 pt-8 pb-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Welcome Hero */}
+            <div className="mb-12 relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 lg:p-12 shadow-xl">
+              <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px]"></div>
+              <div className="relative">
+                <h1 className="text-4xl lg:text-5xl font-title font-bold text-white mb-3">
+                  Olá, {user.user_metadata?.name?.split(' ')[0] || 'Organizador'}! 👋
+                </h1>
+                <p className="text-lg text-blue-100 max-w-2xl">
+                  Gerencie seus eventos, acompanhe vendas e conecte sua comunidade em um só lugar.
+                </p>
+              </div>
+              <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+              <div className="absolute -top-10 -right-20 w-64 h-64 bg-purple-400/10 rounded-full blur-3xl"></div>
+            </div>
+
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <Calendar className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <Badge variant="secondary" className="text-xs">Este mês</Badge>
+                </div>
+                <h3 className="text-3xl font-bold text-gray-900 mb-1">0</h3>
+                <p className="text-sm text-gray-600">Eventos criados</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                    <Ticket className="w-6 h-6 text-green-600" />
+                  </div>
+                  <Badge variant="secondary" className="text-xs">Total</Badge>
+                </div>
+                <h3 className="text-3xl font-bold text-gray-900 mb-1">0</h3>
+                <p className="text-sm text-gray-600">Ingressos vendidos</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <Badge variant="secondary" className="text-xs">Acumulado</Badge>
+                </div>
+                <h3 className="text-3xl font-bold text-gray-900 mb-1">R$ 0</h3>
+                <p className="text-sm text-gray-600">Receita total</p>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mb-12">
+              <h2 className="text-2xl font-title font-bold text-gray-900 mb-6">Ações Rápidas</h2>
+              <div className="grid md:grid-cols-3 gap-6">
+                <Link href="/eventos/novo" className="group">
+                  <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all border-2 border-transparent hover:border-blue-500 cursor-pointer">
+                    <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg">
+                      <Plus className="w-7 h-7 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                      Criar Evento
+                    </h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      Configure um novo evento com ingressos, data e local
+                    </p>
+                  </div>
+                </Link>
+
+                <Link href="/meus-eventos" className="group">
+                  <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all border-2 border-transparent hover:border-purple-500 cursor-pointer">
+                    <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg">
+                      <Calendar className="w-7 h-7 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
+                      Meus Eventos
+                    </h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      Gerencie eventos e acompanhe vendas em tempo real
+                    </p>
+                  </div>
+                </Link>
+
+                <Link href="/meus-ingressos" className="group">
+                  <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all border-2 border-transparent hover:border-green-500 cursor-pointer">
+                    <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg">
+                      <Ticket className="w-7 h-7 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">
+                      Meus Ingressos
+                    </h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      Acesse ingressos comprados e QR codes
+                    </p>
+                  </div>
+                </Link>
+              </div>
+            </div>
+
+            {/* Content Grid */}
+            <div className="grid lg:grid-cols-3 gap-8">
+              {/* Eventos Recentes */}
+              <div className="lg:col-span-2 bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-title font-bold text-gray-900">
+                    Seus Eventos
+                  </h2>
+                  <Link href="/eventos/novo">
+                    <Button size="sm" className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Novo
+                    </Button>
+                  </Link>
+                </div>
                 
-                <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in-up delay-300">
-                  <Button size="lg" asChild className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all">
+                <div className="text-center py-16">
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Calendar className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Nenhum evento ainda
+                  </h3>
+                  <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+                    Comece criando seu primeiro evento e venda ingressos para sua comunidade
+                  </p>
+                  <Button asChild size="lg">
                     <Link href="/eventos/novo">
-                      <Plus className="mr-2 h-5 w-5" />
-                      Criar Novo Evento
-                    </Link>
-                  </Button>
-                  <Button size="lg" variant="outline" asChild className="text-lg px-8 py-6">
-                    <Link href="/perfil">
-                      Meu Perfil
+                      <Plus className="w-5 h-5 mr-2" />
+                      Criar Primeiro Evento
                     </Link>
                   </Button>
                 </div>
-              </>
-            )}
+              </div>
 
-            <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Pagamento Seguro</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Setup em 5 minutos</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Suporte Dedicado</span>
+              {/* Atividade Recente */}
+              <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                <h2 className="text-2xl font-title font-bold text-gray-900 mb-6">
+                  Atividade
+                </h2>
+                <div className="space-y-4">
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Sparkles className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Suas atividades recentes aparecerão aqui
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h3 className="text-3xl sm:text-4xl font-bold mb-4">
-              Por Que Escolher a Fonte Church?
-            </h3>
-            <p className="text-gray-600 max-w-2xl mx-auto font-body">
-              Tudo que você precisa para gerenciar eventos da sua igreja de forma profissional
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            <div className="group bg-white border-2 border-gray-100 p-8 rounded-2xl hover:border-primary/20 hover:shadow-xl transition-all duration-300">
-              <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Calendar className="w-7 h-7 text-white" />
-              </div>
-              <h4 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
-                Gestão Simplificada
-              </h4>
-              <p className="text-gray-600 leading-relaxed font-body">
-                Crie e gerencie eventos em minutos. Interface intuitiva feita especialmente para igrejas.
-              </p>
-            </div>
-
-            <div className="group bg-white border-2 border-gray-100 p-8 rounded-2xl hover:border-primary/20 hover:shadow-xl transition-all duration-300">
-              <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <CreditCard className="w-7 h-7 text-white" />
-              </div>
-              <h4 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
-                Pagamentos Seguros
-              </h4>
-              <p className="text-gray-600 leading-relaxed font-body">
-                Integração com Pagar.me para pagamentos seguros e diretos na sua conta.
-              </p>
-            </div>
-
-            <div className="group bg-white border-2 border-gray-100 p-8 rounded-2xl hover:border-primary/20 hover:shadow-xl transition-all duration-300">
-              <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Users className="w-7 h-7 text-white" />
-              </div>
-              <h4 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
-                Controle de Acesso
-              </h4>
-              <p className="text-gray-600 leading-relaxed font-body">
-                Ingressos eletrônicos para cada compra. Validação rápida e segura na entrada do evento.
-              </p>
-            </div>
-
-            <div className="group bg-white border-2 border-gray-100 p-8 rounded-2xl hover:border-primary/20 hover:shadow-xl transition-all duration-300">
-              <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <CheckCircle className="w-7 h-7 text-white" />
-              </div>
-              <h4 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
-                Custo Acessível
-              </h4>
-              <p className="text-gray-600 leading-relaxed font-body">
-                Apenas R$ 24,90/mês. Sem taxas escondidas. Cancele quando quiser.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="py-20 bg-secondary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold mb-4">Plano Simples e Transparente</h3>
-            <p className="text-gray-600 font-body">Tudo que você precisa para vender ingressos online</p>
-          </div>
-
-          <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-xl p-8 border-2 border-primary">
-            <div className="text-center mb-6">
-              <h4 className="text-2xl font-bold mb-2">Plano Organizador</h4>
-              <div className="flex items-baseline justify-center">
-                <span className="text-5xl font-bold text-primary">R$ 24,90</span>
-                <span className="text-gray-600 ml-2">/mês</span>
-              </div>
-            </div>
-
-            <ul className="space-y-4 mb-8">
-              <li className="flex items-start">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Eventos ilimitados</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Vendas ilimitadas de ingressos</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Apenas 3% de comissão por venda</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Emissão automática de ingressos eletrônicos</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Dashboard de gestão completo</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Suporte técnico dedicado</span>
-              </li>
-            </ul>
-
-            <Button size="lg" asChild className="w-full">
-              <Link href="/cadastro">
-                Começar Agora
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <Footer />
     </div>
