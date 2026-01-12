@@ -4,8 +4,10 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url)
-  const code = requestUrl.searchParams.get('code')
+  const { searchParams, origin } = new URL(request.url)
+  const code = searchParams.get('code')
+  // se houver um parâmetro "next", use-o como URL de redirecionamento
+  const next = searchParams.get('next') ?? '/perfil'
 
   if (code) {
     const cookieStore = cookies()
@@ -83,6 +85,6 @@ export async function GET(request: NextRequest) {
     console.log('[CALLBACK] Nenhum code recebido')
   }
 
-  // Redirecionar para home
-  return NextResponse.redirect(new URL('/', requestUrl.origin))
+  // retornar o usuário para uma página de erro em caso de falha
+  return NextResponse.redirect(`${origin}/login?error=auth_failed`)
 }
